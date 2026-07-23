@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from team_workspace.config import get_settings
 
 settings = get_settings()
