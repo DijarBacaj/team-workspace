@@ -1,6 +1,12 @@
 from fastapi import FastAPI
+from team_workspace.config import get_settings
 
-app = FastAPI(title="Team Workspace API")
+settings = get_settings()
+
+app = FastAPI(
+    title=settings.app_name,
+    debug=settings.debug,
+)
 
 
 @app.get("/health")
