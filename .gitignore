@@ -5,6 +5,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.uv-cache/
+.test-tmp/
+.coverage
+htmlcov/
 
 # Environment variables
 .env

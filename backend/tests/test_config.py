@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from team_workspace.config import Settings
 
@@ -35,3 +36,15 @@ def test_settings_read_environment_variables(
     assert settings.app_name == "Test Workspace API"
     assert settings.app_environment == "testing"
     assert settings.debug is True
+
+
+def test_default_secret_is_rejected_in_production(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("APP_ENVIRONMENT", "production")
+    monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
+
+    with pytest.raises(ValidationError, match="JWT_SECRET_KEY must be changed"):
+        Settings()

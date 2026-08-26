@@ -1,0 +1,46 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: team_workspace
+      POSTGRES_USER: team_workspace
+      POSTGRES_PASSWORD: team_workspace
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U team_workspace -d team_workspace"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      APP_ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://team_workspace:team_workspace@database:5432/team_workspace
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-development-secret-change-me}
+      CORS_ORIGINS: '["http://localhost:5173"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && uvicorn team_workspace.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8000/health/ready', timeout=2)
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
